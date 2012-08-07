@@ -1,0 +1,20 @@
+--- /home/titus/postfix/postfix-2.9.3/src/global/mail_dict.c	2011-12-20 01:25:38.000000000 +0530
++++ /home/titus/postfix/postfix-2.9.3.mod/src/global/mail_dict.c	2012-08-08 00:04:12.252776279 +0530
+@@ -38,6 +38,7 @@
+ #include <dict_pgsql.h>
+ #include <dict_sqlite.h>
+ #include <dict_memcache.h>
++#include <dict_redis.h>
+ #include <mail_dict.h>
+ 
+ typedef struct {
+@@ -59,6 +60,9 @@
+ #ifdef HAS_SQLITE
+     DICT_TYPE_SQLITE, dict_sqlite_open,
+ #endif
++#ifdef HAS_REDIS
++    DICT_TYPE_REDIS, dict_redis_open,
++#endif
+     DICT_TYPE_MEMCACHE, dict_memcache_open,
+     0,
+ };
