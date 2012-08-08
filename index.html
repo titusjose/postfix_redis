@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Postfix Redis by titusjose</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Postfix Redis</h1>
+        <p>Postfix Redis Lookup Table Support</p>
+        <p class="view"><a href="https://github.com/titusjose/postfix_redis">View the Project on GitHub <small>titusjose/postfix_redis</small></a></p>
+        <ul>
+          <li><a href="https://github.com/titusjose/postfix_redis/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/titusjose/postfix_redis/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/titusjose/postfix_redis">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>This is a patch for postfix 2.9.x MTA to support redis lookup table. This patch depends on <a href="https://github.com/antirez" class="user-mention">@antirez</a> hiredis client library.</p>
+
+<h3>Apply Patch</h3>
+
+<p>Download the postfix source at <a href="http://www.postfix.org/download.html">http://www.postfix.org/download.html</a><br>
+Extract the file and switch to the source directory.</p>
+
+<pre><code>$ cp dict_redis.c src/global
+$ cp dict_redis.h src/global
+$ cp hiredis.h src/global
+$ patch -p5 &lt; Makefile.in.patch
+$ patch -p5 &lt; mail_dict.c.patch
+</code></pre>
+
+<h3>Generating Makefiles</h3>
+
+<p>To generate make files run make as follows</p>
+
+<pre><code>$ make makefiles CCARGS="-DHAS_REDIS -I/usr/local/include/hiredis" AUXLIBS="-L/usr/local/lib -lhiredis"
+</code></pre>
+
+<h3>Compile And Install Postfix</h3>
+
+<pre><code>$ make
+$ make install
+</code></pre>
+
+<h3>Installing Hiredis Client Library</h3>
+
+<p>You can clone the code at <a href="https://github.com/antirez/hiredis/">https://github.com/antirez/hiredis/</a>    </p>
+
+<pre><code>$ make
+$ make install
+</code></pre>
+
+<p>Optionally you can also add the folder(/usr/local/lib - default hiredis install folder) to ld.so.conf if required, so that libhiredis.so is resolvable.</p>
+
+<h3>Testing Lookup</h3>
+
+<p>To test the lookup table you can postmap the string as follows</p>
+
+<pre><code>$ postmap -q "string" redis:/etc/postfix/lookup.cf
+</code></pre>
+
+<p>Contents of lookup.cfg:<br>
+host = localhost<br>
+port = 6379</p>
+
+<h3>Configuration</h3>
+
+<p>The configuration file support two attributes, host and port. The default host is 127.0.0.1 and port is 6379.  </p>
+
+<p>Example:<br>
+host = redisdb.example.com<br>
+port = 6379</p>
+
+<h3>Authors and Contributors</h3>
+
+<p>This project includes works from <a href="https://github.com/antirez" class="user-mention">@antirez</a>.</p>
+
+<h3>Contact</h3>
+
+<p>You can contact me at titus dot nitt at gmail dot com.</p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/titusjose">titusjose</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-33932282-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
