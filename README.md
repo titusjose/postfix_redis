@@ -4,8 +4,8 @@ This patch depends on hiredis client library.
 
 Apply the patch to a vanilla postfix 3 source tree
 
-Copy dict_redis.c, dict_redis.h and hiredis.h files to the src/global directory  
-Patch Makefile.in and mail_dict.c in src/global with the provided diffs
+Copy dict_redis.c and dict_redis.h files to the postfix/src/global directory  
+Copy the postfix-redis.patch to the postfix folder and apply with patch -p2 -i postfix-redis.patch
 
 ### Generate make files  
 % make makefiles CCARGS="-DHAS_REDIS -I/usr/include/hiredis" AUXLIBS="-L/usr/lib -lhiredis"  
