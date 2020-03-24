@@ -25,8 +25,12 @@ Copy the postfix-redis.patch to the postfix folder and apply with patch -p2 -i p
 ```
 
 ### Using the lookup table
+```
 transport_maps = redis:/etc/postfix/redis_transport_maps.cf
+```
 
 redis_transport_maps.cf:
+```
 host = localhost
 port = 6379
+```
