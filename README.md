@@ -25,6 +25,8 @@ $ make upgrade
 ```
 
 ### Using the lookup table
+main.cf
+
 ```
 transport_maps = redis:/etc/postfix/redis_transport_maps.cf
 ```
