@@ -122,7 +122,8 @@ DICT   *dict_redis_open(const char *name, int open_flags, int dict_flags)
     dict_redis->dict.owner = cfg_get_owner(dict_redis->parser);
     c = redisConnect(dict_redis->host,dict_redis->port);
     if(c->err) {
-    	dict_redis->c = NULL;
+        msg_fatal("%s:%s: Cannot connect to Redis server %s: %s\n",
+		  DICT_TYPE_REDIS, name, dict_redis->host, c->errstr);
     } else {
         dict_redis->c = c;
     }
