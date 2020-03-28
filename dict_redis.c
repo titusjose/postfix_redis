@@ -1,5 +1,5 @@
 
-#include "sys_defs.h"
+#include <sys_defs.h>
 
 #ifdef HAS_REDIS
 #include <stdio.h>
@@ -12,19 +12,19 @@
 
 /* Utility library. */
 
-#include "dict.h"
-#include "mymalloc.h"
-#include "vstring.h"
-#include "stringops.h"
+#include <dict.h>
+#include <vstring.h>
+#include <stringops.h>
+#include <mymalloc.h>
 
 /* Global library. */
 
-#include "cfg_parser.h"
+#include <cfg_parser.h>
 
 /* Application-specific. */
 
-#include "dict_redis.h"
-#include "hiredis.h"
+#include <dict_redis.h>
+#include <hiredis.h>
 
 typedef struct {
     DICT    dict;
@@ -34,12 +34,18 @@ typedef struct {
     int     port;
 } DICT_REDIS;
 
-/* internal function declarations */
-static const char *dict_redis_lookup(DICT *, const char *);
-DICT   *dict_redis_open(const char *, int, int);
-static void dict_redis_close(DICT *);
-static void redis_parse_config(DICT_REDIS *, const char *);
+/* dict_redis_close - close redis database */
 
+static void dict_redis_close(DICT *dict)
+{
+    DICT_REDIS *dict_redis = (DICT_REDIS *) dict;
+
+    cfg_parser_free(dict_redis->parser);
+    myfree(dict_redis->host);
+    if (dict->fold_buf)
+	vstring_free(dict->fold_buf);
+    dict_free(dict);
+}
 
 static const char *dict_redis_lookup(DICT *dict, const char *name)
 {
@@ -49,7 +55,7 @@ static const char *dict_redis_lookup(DICT *dict, const char *name)
     const char *r;
     VSTRING *result;
     dict->error = 0;
-    
+
     result = vstring_alloc(10);
     VSTRING_RESET(result);
     VSTRING_TERMINATE(result);
@@ -62,7 +68,7 @@ static const char *dict_redis_lookup(DICT *dict, const char *name)
 	vstring_strcpy(dict->fold_buf, name);
 	name = lowercase(vstring_str(dict->fold_buf));
     }
- 
+
     if(dict_redis->c) {
         reply = redisCommand(dict_redis->c,"GET %s",name);
     }
@@ -120,21 +126,8 @@ DICT   *dict_redis_open(const char *name, int open_flags, int dict_flags)
     } else {
         dict_redis->c = c;
     }
-    
+
     return (DICT_DEBUG (&dict_redis->dict));
-}
-
-/* dict_redis_close - close redis database */
-
-static void dict_redis_close(DICT *dict)
-{
-    DICT_REDIS *dict_redis = (DICT_REDIS *) dict;
-
-    cfg_parser_free(dict_redis->parser);
-    myfree(dict_redis->host);
-    if (dict->fold_buf)
-	vstring_free(dict->fold_buf);
-    dict_free(dict);
 }
 
 #endif
