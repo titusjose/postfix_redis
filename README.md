@@ -11,17 +11,17 @@ Copy the postfix-redis.patch to the postfix folder and apply with patch -p2 -i p
 
 ### Generate make files
 ```
-#make makefiles CCARGS="-DHAS_REDIS $(pkg-config --cflags hiredis)" AUXLIBS_REDIS="$(pkg-config --libs hiredis)" config_directory=/etc/postfix meta_directory=/etc/postfix daemon_directory=/usr/libexec/postfix shlib_directory=/usr/lib/postfix dynamicmaps=yes shared=yes
+$ make makefiles CCARGS="-DHAS_REDIS $(pkg-config --cflags hiredis)" AUXLIBS_REDIS="$(pkg-config --libs hiredis)" config_directory=/etc/postfix meta_directory=/etc/postfix daemon_directory=/usr/libexec/postfix shlib_directory=/usr/lib/postfix dynamicmaps=yes shared=yes
 ```
 
 ### Compile postfix
 ```
-#make
+$ make
 ```
 
 ### Install postfix
 ``` 
-#make upgrade
+$ make upgrade
 ```
 
 ### Using the lookup table
@@ -33,4 +33,11 @@ redis_transport_maps.cf:
 ```
 host = localhost
 port = 6379
+```
+
+### Testing Lookup
+
+To test the lookup table you can postmap the string as follows
+```
+$ postmap -q "string" redis:/etc/postfix/redis_transport_maps.cf
 ```
