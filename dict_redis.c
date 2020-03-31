@@ -1,5 +1,5 @@
 
-#include <sys_defs.h>
+#include "sys_defs.h"
 
 #ifdef HAS_REDIS
 #include <stdio.h>
@@ -12,19 +12,21 @@
 
 /* Utility library. */
 
-#include <dict.h>
-#include <vstring.h>
-#include <stringops.h>
-#include <mymalloc.h>
+#include "msg.h"
+#include "dict.h"
+#include "mymalloc.h"
+#include "vstring.h"
+#include "stringops.h"
+#include "valid_hostname.h"
 
 /* Global library. */
 
-#include <cfg_parser.h>
+#include "cfg_parser.h"
 
 /* Application-specific. */
 
-#include <dict_redis.h>
-#include <hiredis.h>
+#include "dict_redis.h"
+#include "hiredis.h"
 
 typedef struct {
     DICT    dict;
@@ -32,20 +34,15 @@ typedef struct {
     redisContext *c;
     char   *host;
     int     port;
+    char   *prefix;
 } DICT_REDIS;
 
-/* dict_redis_close - close redis database */
+/* internal function declarations */
+static const char *dict_redis_lookup(DICT *, const char *);
+DICT   *dict_redis_open(const char *, int, int);
+static void dict_redis_close(DICT *);
+static void redis_parse_config(DICT_REDIS *, const char *);
 
-static void dict_redis_close(DICT *dict)
-{
-    DICT_REDIS *dict_redis = (DICT_REDIS *) dict;
-
-    cfg_parser_free(dict_redis->parser);
-    myfree(dict_redis->host);
-    if (dict->fold_buf)
-	vstring_free(dict->fold_buf);
-    dict_free(dict);
-}
 
 static const char *dict_redis_lookup(DICT *dict, const char *name)
 {
@@ -59,6 +56,10 @@ static const char *dict_redis_lookup(DICT *dict, const char *name)
     result = vstring_alloc(10);
     VSTRING_RESET(result);
     VSTRING_TERMINATE(result);
+
+
+//    if (msg_verbose)
+        msg_info("%s: Searching for key %s%s",dict_redis->host,dict_redis->prefix,name);
     /*
      * Optionally fold the key.
      */
@@ -70,7 +71,7 @@ static const char *dict_redis_lookup(DICT *dict, const char *name)
     }
 
     if(dict_redis->c) {
-        reply = redisCommand(dict_redis->c,"GET %s",name);
+        reply = redisCommand(dict_redis->c,"GET %s%s",dict_redis->prefix,name);
     }
     else {
         dict->error = DICT_ERR_CONFIG;
@@ -81,7 +82,7 @@ static const char *dict_redis_lookup(DICT *dict, const char *name)
         freeReplyObject(reply);
     }
     else {
-        dict->error = DICT_ERR_RETRY;
+        return(0);
     }
     return ((dict->error == 0 && *r) ? r : 0);
 }
@@ -95,6 +96,7 @@ static void redis_parse_config(DICT_REDIS *dict_redis, const char *rediscf)
 
     dict_redis->port = cfg_get_int(p, "port", 6379, 0, 0);
     dict_redis->host = cfg_get_str(p, "host", "127.0.0.1", 1, 0);
+    dict_redis->prefix = cfg_get_str(p, "prefix", "", 0, 0);
 }
 
 /* dict_redis_open - open redis data base */
@@ -123,12 +125,25 @@ DICT   *dict_redis_open(const char *name, int open_flags, int dict_flags)
     c = redisConnect(dict_redis->host,dict_redis->port);
     if(c->err) {
         msg_fatal("%s:%s: Cannot connect to Redis server %s: %s\n",
-		  DICT_TYPE_REDIS, name, dict_redis->host, c->errstr);
+            DICT_TYPE_REDIS, name, dict_redis->host, c->errstr);
     } else {
         dict_redis->c = c;
     }
 
     return (DICT_DEBUG (&dict_redis->dict));
+}
+
+/* dict_redis_close - close redis database */
+
+static void dict_redis_close(DICT *dict)
+{
+    DICT_REDIS *dict_redis = (DICT_REDIS *) dict;
+
+    cfg_parser_free(dict_redis->parser);
+    myfree(dict_redis->host);
+    if (dict->fold_buf)
+	vstring_free(dict->fold_buf);
+    dict_free(dict);
 }
 
 #endif

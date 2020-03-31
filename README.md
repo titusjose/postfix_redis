@@ -25,21 +25,57 @@ $ make upgrade
 ```
 
 ### Using the lookup table
-main.cf:
+example main.cf:
 
 ```
-transport_maps = redis:/etc/postfix/redis_transport_maps.cf
+virtual_mailbox_domains = redis:/etc/postfix/redis-vdomains.cf
+virtual_mailbox_maps = redis:/etc/postfix/redis-vmailbox-maps.cf
+virtual_alias_maps = redis:/etc/postfix/redis-valias-maps.cf
 ```
 
-redis_transport_maps.cf:
+redis-vdomains.cf:
 ```
-host = localhost
-port = 6379
+host = 127.0.0.1
+prefix = VMD:
+```
+
+redis-vmailbox-maps.cf:
+```
+host = 127.0.0.1
+prefix = VMM:
+```
+
+redis-redis-valias-maps.cf:
+```
+ost = 127.0.0.1
+prefix = VAM:
+```
+
+Example Redis keys and values:
+```
+1) "VMD:example.com" "example.com"
+2) "VMM:user@example.com" "user@example.com"
+3) "VAM:postmaster@example.com" "user@example.com"
 ```
 
 ### Testing Lookup
 
 To test the lookup table you can postmap the string as follows
 ```
-$ postmap -q "string" redis:/etc/postfix/redis_transport_maps.cf
+$ postmap -q "postmaster@example.com" redis:/etc/postfix/redis-redis-valias-maps.cf
+```
+
+## Creating Redis database
+virtual_mailbox_domains
+```
+redis-cli set VMD:example.com example.com
+```
+virtual_mailbox_maps
+```
+redis-cli set VMM:user@example.com user@example.com
+```
+
+virtual_alias_maps
+```
+redis_cli set VAM:postmaster@example.com user@example.com
 ```
