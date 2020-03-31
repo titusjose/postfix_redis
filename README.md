@@ -24,8 +24,8 @@ $ make
 $ make upgrade
 ```
 
-### Using the lookup table
-example main.cf:
+### Example postfix configuration
+main.cf:
 
 ```
 virtual_mailbox_domains = redis:/etc/postfix/redis-vdomains.cf
@@ -33,21 +33,31 @@ virtual_mailbox_maps = redis:/etc/postfix/redis-vmailbox-maps.cf
 virtual_alias_maps = redis:/etc/postfix/redis-valias-maps.cf
 ```
 
+### Example .cf files
+#### Defaults
+host = 127.0.0.1
+port = 6379
+prefix = (none)
+
+
 redis-vdomains.cf:
 ```
 host = 127.0.0.1
+port = 6379
 prefix = VMD:
 ```
 
 redis-vmailbox-maps.cf:
 ```
 host = 127.0.0.1
+port = 6379
 prefix = VMM:
 ```
 
 redis-redis-valias-maps.cf:
 ```
-ost = 127.0.0.1
+host = 127.0.0.1
+port = 6379
 prefix = VAM:
 ```
 
