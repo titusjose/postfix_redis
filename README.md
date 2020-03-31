@@ -35,10 +35,11 @@ virtual_alias_maps = redis:/etc/postfix/redis-valias-maps.cf
 
 ### Example .cf files
 #### Defaults
+```
 host = 127.0.0.1
 port = 6379
 prefix = (none)
-
+```
 
 redis-vdomains.cf:
 ```
