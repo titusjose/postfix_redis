@@ -68,14 +68,14 @@ $ postmap -q "postmaster@example.com" redis:/etc/postfix/redis-redis-valias-maps
 ## Creating Redis database
 virtual_mailbox_domains
 ```
-redis-cli set VMD:example.com example.com
+$ redis-cli set VMD:example.com example.com
 ```
 virtual_mailbox_maps
 ```
-redis-cli set VMM:user@example.com user@example.com
+$ redis-cli set VMM:user@example.com user@example.com
 ```
 
 virtual_alias_maps
 ```
-redis_cli set VAM:postmaster@example.com user@example.com
+$ redis_cli set VAM:postmaster@example.com user@example.com
 ```
