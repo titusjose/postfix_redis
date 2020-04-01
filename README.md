@@ -76,7 +76,7 @@ To test the lookup table you can postmap the string as follows
 $ postmap -q "postmaster@example.com" redis:/etc/postfix/redis-redis-valias-maps.cf
 ```
 
-## Creating Redis database
+### Creating Redis database
 virtual_mailbox_domains
 ```
 $ redis-cli set VMD:example.com example.com
