@@ -88,5 +88,5 @@ $ redis-cli set VMM:user@example.com user@example.com
 
 virtual_alias_maps
 ```
-$ redis_cli set VAM:postmaster@example.com user@example.com
+$ redis-cli set VAM:postmaster@example.com user@example.com
 ```
