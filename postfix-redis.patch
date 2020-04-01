@@ -54,7 +54,7 @@ diff -Nurp postfix-3.4.8/postfix/src/global/mail_dict.c postfix-3.4.8-redis/post
  #endif
 diff -Nurp postfix-3.4.8/postfix/src/global/Makefile.in postfix-3.4.8-redis/postfix/src/global/Makefile.in
 --- postfix-3.4.8/postfix/src/global/Makefile.in	2019-11-28 05:26:35.000000000 +0000
-+++ postfix-3.4.8-redis/postfix/src/global/Makefile.in	2020-03-22 12:06:18.000000000 +0000
++++ postfix-3.4.8-redis/postfix/src/global/Makefile.in	2020-04-01 09:04:06.425798408 +0000
 @@ -3,7 +3,7 @@ SRCS	= abounce.c anvil_clnt.c been_here.
  	canon_addr.c cfg_parser.c cleanup_strerror.c cleanup_strflags.c \
  	clnt_stream.c conv_time.c db_common.c debug_peer.c debug_process.c \
@@ -108,11 +108,12 @@ diff -Nurp postfix-3.4.8/postfix/src/global/Makefile.in postfix-3.4.8-redis/post
  	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict sqlite:/xx write >>surrogate.tmp 2>&1
  	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict sqlite:/xx read >>surrogate.tmp 2>&1
  	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict memcache:/xx read >>surrogate.tmp 2>&1
-@@ -1152,6 +1157,16 @@ dict_pgsql.o: db_common.h
+@@ -1152,6 +1157,17 @@ dict_pgsql.o: db_common.h
  dict_pgsql.o: dict_pgsql.c
  dict_pgsql.o: dict_pgsql.h
  dict_pgsql.o: string_list.h
 +dict_redis.o: ../../include/dict.h
++dict_redis.o: ../../include/msg.h
 +dict_redis.o: ../../include/mymalloc.h
 +dict_redis.o: ../../include/vbuf.h
 +dict_redis.o: ../../include/vstream.h
@@ -125,7 +126,7 @@ diff -Nurp postfix-3.4.8/postfix/src/global/Makefile.in postfix-3.4.8-redis/post
  dict_proxy.o: ../../include/argv.h
  dict_proxy.o: ../../include/attr.h
  dict_proxy.o: ../../include/check_arg.h
-@@ -1723,6 +1738,7 @@ mail_dict.o: dict_ldap.h
+@@ -1723,6 +1739,7 @@ mail_dict.o: dict_ldap.h
  mail_dict.o: dict_memcache.h
  mail_dict.o: dict_mysql.h
  mail_dict.o: dict_pgsql.h

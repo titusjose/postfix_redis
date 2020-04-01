@@ -17,7 +17,6 @@
 #include "mymalloc.h"
 #include "vstring.h"
 #include "stringops.h"
-#include "valid_hostname.h"
 
 /* Global library. */
 
