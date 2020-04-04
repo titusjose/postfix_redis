@@ -1,3 +1,72 @@
+/*++
+/* NAME
+/*	dict_redis 3
+/* SUMMARY
+/*	dictionary manager interface to Redis databases
+/* SYNOPSIS
+/*	#include <dict_redis.h>
+/*
+/*	DICT	*dict_redis_open(name, open_flags, dict_flags)
+/*	const char *name;
+/*	int	open_flags;
+/*	int	dict_flags;
+/* DESCRIPTION
+/*	dict_redis_open() creates a dictionary of type 'redis'.  This
+/*	dictionary is an interface for the postfix key->value mappings
+/*	to redis.  The result is a pointer to the installed dictionary,
+/*	or a null pointer in case of problems.
+/* .PP
+/*	Arguments:
+/* .IP name
+/*	Either the path to the Redis configuration file (if it
+/*	starts with '/' or '.'), or the prefix which will be used to
+/*	obtain main.cf configuration parameters for this search.
+/*
+/*	In the first case, the configuration parameters below are
+/*	specified in the file as \fIname\fR=\fIvalue\fR pairs.
+/*
+/*	In the second case, the configuration parameters are
+/*	prefixed with the value of \fIname\fR and an underscore,
+/*	and they are specified in main.cf.  For example, if this
+/*	value is \fIredisDB\fR, the parameters would look like
+/*	\fIredisDB_host\fR, \fIpredisDB_prefix\fR, and so on.
+/* .IP other_name
+/*	reference for outside use.
+/* .IP open_flags
+/*	unused.
+/* .IP dict_flags
+/*	See dict_open(3).
+/*
+/* .PP
+/*	Configuration parameters:
+/* .IP host
+/*	IP address of the redis server hosting the database.
+/* .IP port
+/*	Port number to connect to the above.
+/* .IP prefix
+/*	Prefix to add to the key when looking it up.
+/* .PP
+/*	For example, if you want the map to reference databases on
+/*	redis host "127.0.0.1" and prefix the query with VMD:
+/*	Then the configuration file
+/*	should read:
+/* .PP
+/*	host = 127.0.0.1
+/* .br
+/*	port = 6370
+/* .br
+/*	prefix = VMD:
+/* .PP
+/* SEE ALSO
+/*	dict(3) generic dictionary manager
+/* AUTHOR(S)
+/*	Titus Jose
+/*	titus.nitt@gmail.com
+/*
+/*	Updated by:
+/*	Duncan Bellamy
+/*	dunk@denkimushi.com
+/*--*/
 
 #include "sys_defs.h"
 
