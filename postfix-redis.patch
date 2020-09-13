@@ -1,16 +1,16 @@
-diff -Nurp postfix-3.4.8/postfix/conf/dynamicmaps.cf postfix-3.4.8-redis/postfix/conf/dynamicmaps.cf
---- postfix-3.4.8/postfix/conf/dynamicmaps.cf	2019-11-28 05:26:35.000000000 +0000
-+++ postfix-3.4.8-redis/postfix/conf/dynamicmaps.cf	2020-03-22 07:59:58.407806082 +0000
+diff -Nurp a/conf/dynamicmaps.cf b/conf/dynamicmaps.cf
+--- a/conf/dynamicmaps.cf	2014-05-30 12:38:33.000000000 +0100
++++ b/conf/dynamicmaps.cf	2020-08-15 08:59:29.358727776 +0100
 @@ -5,5 +5,6 @@ lmdb	${LIB_PREFIX}lmdb${LIB_SUFFIX}	dict
  mysql	${LIB_PREFIX}mysql${LIB_SUFFIX}	dict_mysql_open
  pcre	${LIB_PREFIX}pcre${LIB_SUFFIX}	dict_pcre_open
  pgsql	${LIB_PREFIX}pgsql${LIB_SUFFIX}	dict_pgsql_open
-+redis	${LIB_PREFIX}redis${LIB_SUFFIX}	dict_redis_open
++redis	${LIB_PREFIX}redis${LIB_SUFFIX} dict_redis_open
  sdbm	${LIB_PREFIX}sdbm${LIB_SUFFIX}	dict_sdbm_open	mkmap_sdbm_open
  sqlite	${LIB_PREFIX}sqlite${LIB_SUFFIX}	dict_sqlite_open
-diff -Nurp postfix-3.4.8/postfix/conf/postfix-files postfix-3.4.8-redis/postfix/conf/postfix-files
---- postfix-3.4.8/postfix/conf/postfix-files	2019-11-28 05:26:35.000000000 +0000
-+++ postfix-3.4.8-redis/postfix/conf/postfix-files	2020-03-24 10:58:05.971461467 +0000
+diff -Nurp a/conf/postfix-files b/conf/postfix-files
+--- a/conf/postfix-files	2019-01-29 22:24:42.000000000 +0000
++++ b/conf/postfix-files	2020-08-15 08:59:59.590574025 +0100
 @@ -78,6 +78,7 @@ $shlib_directory/${LIB_PREFIX}lmdb${LIB_
  $shlib_directory/${LIB_PREFIX}mysql${LIB_SUFFIX}:f:root:-:755
  $shlib_directory/${LIB_PREFIX}pcre${LIB_SUFFIX}:f:root:-:755
@@ -19,10 +19,10 @@ diff -Nurp postfix-3.4.8/postfix/conf/postfix-files postfix-3.4.8-redis/postfix/
  $shlib_directory/${LIB_PREFIX}sdbm${LIB_SUFFIX}:f:root:-:755
  $shlib_directory/${LIB_PREFIX}sqlite${LIB_SUFFIX}:f:root:-:755
  $meta_directory/dynamicmaps.cf.d:d:root:-:755
-diff -Nurp postfix-3.4.8/postfix/makedefs postfix-3.4.8-redis/postfix/makedefs
---- postfix-3.4.8/postfix/makedefs	2019-11-28 05:26:35.000000000 +0000
-+++ postfix-3.4.8-redis/postfix/makedefs	2020-03-24 11:26:03.765927383 +0000
-@@ -1154,7 +1154,7 @@ DEFINED_MAP_TYPES=`
+diff -Nurp a/makedefs b/makedefs
+--- a/makedefs	2020-05-06 15:10:47.000000000 +0100
++++ b/makedefs	2020-08-15 09:02:11.765901819 +0100
+@@ -1167,7 +1167,7 @@ DEFINED_MAP_TYPES=`
  
  # Propagate AUXLIBS_FOO or merge them into global AUXLIBS (i.e. SYSLIBS).
  
@@ -31,9 +31,9 @@ diff -Nurp postfix-3.4.8/postfix/makedefs postfix-3.4.8-redis/postfix/makedefs
  
  case "$dynamicmaps" in
  yes) for name in $PLUGGABLE_MAPS
-diff -Nurp postfix-3.4.8/postfix/src/global/mail_dict.c postfix-3.4.8-redis/postfix/src/global/mail_dict.c
---- postfix-3.4.8/postfix/src/global/mail_dict.c	2019-11-28 05:26:35.000000000 +0000
-+++ postfix-3.4.8-redis/postfix/src/global/mail_dict.c	2020-03-22 07:59:40.955908935 +0000
+diff -Nurp a/src/global/mail_dict.c b/src/global/mail_dict.c
+--- a/src/global/mail_dict.c	2014-06-22 01:42:55.000000000 +0100
++++ b/src/global/mail_dict.c	2020-08-15 09:03:33.445486419 +0100
 @@ -45,6 +45,7 @@
  #include <dict_ldap.h>
  #include <dict_mysql.h>
@@ -52,9 +52,9 @@ diff -Nurp postfix-3.4.8/postfix/src/global/mail_dict.c postfix-3.4.8-redis/post
  #ifdef HAS_SQLITE
      DICT_TYPE_SQLITE, dict_sqlite_open,
  #endif
-diff -Nurp postfix-3.4.8/postfix/src/global/Makefile.in postfix-3.4.8-redis/postfix/src/global/Makefile.in
---- postfix-3.4.8/postfix/src/global/Makefile.in	2019-11-28 05:26:35.000000000 +0000
-+++ postfix-3.4.8-redis/postfix/src/global/Makefile.in	2020-04-01 09:04:06.425798408 +0000
+diff -Nurp a/src/global/Makefile.in b/src/global/Makefile.in
+--- a/src/global/Makefile.in	2020-01-12 13:50:56.000000000 +0000
++++ b/src/global/Makefile.in	2020-08-15 09:12:53.593101032 +0100
 @@ -3,7 +3,7 @@ SRCS	= abounce.c anvil_clnt.c been_here.
  	canon_addr.c cfg_parser.c cleanup_strerror.c cleanup_strflags.c \
  	clnt_stream.c conv_time.c db_common.c debug_peer.c debug_process.c \
@@ -64,7 +64,7 @@ diff -Nurp postfix-3.4.8/postfix/src/global/Makefile.in postfix-3.4.8-redis/post
  	dict_proxy.c dict_sqlite.c domain_list.c dot_lockfile.c dot_lockfile_as.c \
  	dsb_scan.c dsn.c dsn_buf.c dsn_mask.c dsn_print.c dsn_util.c \
  	ehlo_mask.c ext_prop.c file_id.c flush_clnt.c header_opts.c \
-@@ -74,13 +74,13 @@ OBJS	= abounce.o anvil_clnt.o been_here.
+@@ -78,13 +78,13 @@ OBJS	= abounce.o anvil_clnt.o been_here.
  # MAP_OBJ is for maps that may be dynamically loaded with dynamicmaps.cf.
  # When hard-linking these maps, makedefs sets NON_PLUGIN_MAP_OBJ=$(MAP_OBJ),
  # otherwise it sets the PLUGIN_* macros.
@@ -80,7 +80,7 @@ diff -Nurp postfix-3.4.8/postfix/src/global/Makefile.in postfix-3.4.8-redis/post
  	dot_lockfile.h dot_lockfile_as.h dsb_scan.h dsn.h dsn_buf.h \
  	dsn_mask.h dsn_print.h dsn_util.h ehlo_mask.h ext_prop.h \
  	file_id.h flush_clnt.h header_opts.h header_token.h input_transp.h \
-@@ -125,7 +125,7 @@ LIBS	= ../../lib/lib$(LIB_PREFIX)util$(L
+@@ -131,7 +131,7 @@ LIBS	= ../../lib/lib$(LIB_PREFIX)util$(L
  LIB_DIR	= ../../lib
  INC_DIR	= ../../include
  PLUGIN_MAP_SO = $(LIB_PREFIX)ldap$(LIB_SUFFIX) $(LIB_PREFIX)mysql$(LIB_SUFFIX) \
@@ -89,7 +89,7 @@ diff -Nurp postfix-3.4.8/postfix/src/global/Makefile.in postfix-3.4.8-redis/post
  	$(LIB_PREFIX)lmdb$(LIB_SUFFIX) $(LIB_PREFIX)cdb$(LIB_SUFFIX) \
  	$(LIB_PREFIX)sdbm$(LIB_SUFFIX)
  MAKES	=
-@@ -161,6 +161,9 @@ $(LIB_PREFIX)mysql$(LIB_SUFFIX): dict_my
+@@ -167,6 +167,9 @@ $(LIB_PREFIX)mysql$(LIB_SUFFIX): dict_my
  $(LIB_PREFIX)pgsql$(LIB_SUFFIX): dict_pgsql.o
  	$(PLUGIN_LD) $(SHLIB_RPATH) -o $@ dict_pgsql.o $(AUXLIBS_PGSQL)
  
@@ -99,7 +99,7 @@ diff -Nurp postfix-3.4.8/postfix/src/global/Makefile.in postfix-3.4.8-redis/post
  $(LIB_PREFIX)sqlite$(LIB_SUFFIX): dict_sqlite.o
  	$(PLUGIN_LD) $(SHLIB_RPATH) -o $@ dict_sqlite.o $(AUXLIBS_SQLITE)
  
-@@ -505,6 +508,8 @@ surrogate_test: mail_dict surrogate.ref
+@@ -521,6 +524,8 @@ surrogate_test: mail_dict surrogate.ref
  	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict mysql:/xx read >>surrogate.tmp 2>&1
  	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict pgsql:/xx write >>surrogate.tmp 2>&1
  	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict pgsql:/xx read >>surrogate.tmp 2>&1
@@ -108,7 +108,7 @@ diff -Nurp postfix-3.4.8/postfix/src/global/Makefile.in postfix-3.4.8-redis/post
  	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict sqlite:/xx write >>surrogate.tmp 2>&1
  	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict sqlite:/xx read >>surrogate.tmp 2>&1
  	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict memcache:/xx read >>surrogate.tmp 2>&1
-@@ -1152,6 +1157,17 @@ dict_pgsql.o: db_common.h
+@@ -1183,6 +1188,17 @@ dict_pgsql.o: db_common.h
  dict_pgsql.o: dict_pgsql.c
  dict_pgsql.o: dict_pgsql.h
  dict_pgsql.o: string_list.h
@@ -126,7 +126,7 @@ diff -Nurp postfix-3.4.8/postfix/src/global/Makefile.in postfix-3.4.8-redis/post
  dict_proxy.o: ../../include/argv.h
  dict_proxy.o: ../../include/attr.h
  dict_proxy.o: ../../include/check_arg.h
-@@ -1723,6 +1739,7 @@ mail_dict.o: dict_ldap.h
+@@ -1768,6 +1784,7 @@ mail_dict.o: dict_ldap.h
  mail_dict.o: dict_memcache.h
  mail_dict.o: dict_mysql.h
  mail_dict.o: dict_pgsql.h

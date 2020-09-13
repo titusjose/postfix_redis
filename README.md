@@ -71,9 +71,9 @@ Example Redis keys and values:
 
 ### Testing Lookup
 
-To test the lookup table you can postmap the string as follows
+To test the lookup table you can postmap the string as follows, and monitor redis with ```redis-cli monitor```.
 ```
-$ postmap -q "postmaster@example.com" redis:/etc/postfix/redis-redis-valias-maps.cf
+$ postmap -q "postmaster@example.com" redis:/etc/postfix/redis-valias-maps.cf
 ```
 
 ### Creating Redis database

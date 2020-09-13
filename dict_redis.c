@@ -126,8 +126,8 @@ static const char *dict_redis_lookup(DICT *dict, const char *name)
     VSTRING_TERMINATE(result);
 
 
-//    if (msg_verbose)
-        msg_info("%s: Searching for key %s%s",dict_redis->host,dict_redis->prefix,name);
+    if (msg_verbose)
+        msg_info("%s: Requesting key %s%s",dict_redis->host,dict_redis->prefix,name);
     /*
      * Optionally fold the key.
      */
