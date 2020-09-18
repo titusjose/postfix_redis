@@ -47,15 +47,15 @@
 /*	Prefix to add to the key when looking it up.
 /* .PP
 /*	For example, if you want the map to reference databases on
-/*	redis host "127.0.0.1" and prefix the query with VMD:
+/*	redis host "127.0.0.1" and prefix the query with VDOM:
 /*	Then the configuration file
 /*	should read:
 /* .PP
 /*	host = 127.0.0.1
 /* .br
-/*	port = 6370
+/*	port = 6379
 /* .br
-/*	prefix = VMD:
+/*	prefix = VDOM:
 /* .PP
 /* SEE ALSO
 /*	dict(3) generic dictionary manager
