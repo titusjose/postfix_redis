@@ -1,0 +1,108 @@
+.TH REDIS_TABLE 5 
+.ad
+.fi
+.SH NAME
+redis_table
+\-
+Postfix Redis client configuration
+.SH "SYNOPSIS"
+.na
+.nf
+\fBpostmap \-q "\fIprefix:string\fB" redis:/etc/postfix/\fIfilename\fR
+
+\fBpostmap \-q \- redis:/etc/postfix/\fIfilename\fB <\fIinputfile\fR
+.SH DESCRIPTION
+.ad
+.fi
+The Postfix mail system uses optional tables for address
+rewriting or mail routing. These tables are usually in
+\fBdbm\fR or \fBdb\fR format.
+
+Alternatively, lookup tables can be specified as Redis
+databases.  In order to use Redis lookups, define a
+Redis source as a lookup table in main.cf, for example:
+.nf
+    virtual_alias_maps = redis:/etc/postfix/redis\-valias\-maps.cf
+.fi
+
+The file /etc/postfix/redis\-valias\-maps.cf has the same format as
+the Postfix main.cf file, and can specify the parameters
+described below.
+.SH "host"
+.na
+.nf
+.ad
+.fi
+The IP address of the host that Postfix will try to connect to and query
+from. 
+
+Example:
+.nf
+    host = 127.0.0.1
+.fi
+
+.SH "port"
+.na
+.nf
+.ad
+.fi
+.IP "\fBport\fR"
+The port that Postfix will use trying  to connect to and query
+from the Redis server. If not specified the default of \fB6379://\fR
+will be used.
+
+Example:
+.nf
+    port = 6379
+.fi
+
+.IP "\fBprefix\fR"
+This is the prefix that is added to the query from postfix before it is passed to
+redis for a lookup, allowing postfix to use simple key:value lookups from Redis.
+
+Examples:
+.nf
+    prefix = VALI
+    prefix = LOCAL
+    prefix = REV
+    prefix = HELO
+.fi
+
+.SH "SEE ALSO"
+.na
+.nf
+postmap(1), Postfix lookup table manager
+postconf(5), configuration parameters
+ldap_table(5), LDAP lookup tables
+mysql_table(5), MySQL lookup tables
+sqlite_table(5), SQLite lookup tables
+.SH "README FILES"
+.na
+.nf
+.ad
+.fi
+Use "\fBpostconf readme_directory\fR" or
+"\fBpostconf html_directory\fR" to locate this information.
+.na
+.nf
+DATABASE_README, Postfix lookup table overview
+REDIS_README
+.SH "LICENSE"
+.na
+.nf
+.ad
+.fi
+The Secure Mailer license must be distributed with this software.
+.SH HISTORY
+.ad
+.fi
+Redis support was introduced with Postfix version 3.?
+.SH "AUTHOR(S)"
+.na
+.nf
+Titus Jose
+titus.nitt@gmail.com
+
+Updated by:
+Duncan Bellamy
+dunk@denkimushi.com

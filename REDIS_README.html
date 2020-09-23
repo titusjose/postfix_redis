@@ -1,0 +1,165 @@
+<!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title>Postfix Redis Howto</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+
+</head>
+
+<body>
+
+<h1><img src="postfix-logo.jpg" width="203" height="98" ALT="">Postfix Redis Howto</h1>
+
+<hr>
+
+<h2>Introduction</h2>
+
+<p> The Postfix redis map type allows you to hook up Postfix to a
+Redis database. </p>
+
+<p> Busy mail servers using pgsql maps will generate lots of
+concurrent pgsql clients, so the pgsql server(s) should be run with
+this fact in mind. You can reduce the number of concurrent pgsql
+clients by using the Postfix <a href="proxymap.8.html">proxymap(8)</a> service. </p>
+
+<h2>Building Postfix with Redis support</h2>
+
+<p> These instructions assume that you build Postfix from source
+code as described in the <a href="INSTALL.html">INSTALL</a> document. Some modification may
+be required if you build Postfix from a vendor-specific source
+package.  </p>
+
+<p> Note: to use Redis with Alpine Linux's Postfix, all you
+need to do is to install the postfix-redis package and you're done.
+There is no need to recompile Postfix. </p>
+
+<p> In order to build Postfix with redis map support, you specify
+-DHAS_REDIS, the directory with the hiredis header files, and
+the location of the hiredis library file. </p>
+
+<p> For example: </p>
+
+<blockquote>
+<pre>
+% make tidy
+% make -f Makefile.init makefiles \
+        'CCARGS=-DHAS_REDIS -I/usr/local/include/hiredis' \
+        '<a href="REDIS_README.html">AUXLIBS_REDIS</a>=-L/usr/local/lib -lhiredis'
+</pre>
+</blockquote>
+
+<p> Postfix versions before 3.0 use AUXLIBS instead of <a href="REDIS_README.html">AUXLIBS_REDIS</a>.
+With Postfix 3.0 and later, the old AUXLIBS variable still supports
+building a statically-loaded Redis database client, but only
+the new <a href="REDIS_README.html">AUXLIBS_REDIS</a> variable supports building a dynamically-loaded
+or statically-loaded Redis database client.  </p>
+
+<blockquote>
+ 
+<p> Failure to use the <a href="REDIS_README.html">AUXLIBS_REDIS</a> variable will defeat the purpose
+of dynamic database client loading. Every Postfix executable file
+will have Redis database library dependencies. And that was exactly
+what dynamic database client loading was meant to avoid. </p>
+ 
+</blockquote>
+
+<p> Then just run 'make'.  </p>
+
+<h2>Configuring Redis lookup tables</h2>
+
+<p> Once Postfix is built with redis support, you can specify a
+map type in <a href="postconf.5.html">main.cf</a> like this: </p>
+
+<blockquote>
+<pre>
+/etc/postfix/<a href="postconf.5.html">main.cf</a>:
+    <a href="postconf.5.html#alias_maps">alias_maps</a> = <a href="redis_table.5.html">pgsql</a>:/etc/postfix/redis-aliases.cf
+</pre>
+</blockquote>
+
+<p> The file /etc/postfix/redis-aliases.cf specifies how to reach the redis database.
+For a complete description, see the <a href="redis_table.5.html">redis_table(5)</a> manual page. </p>
+
+<h2>Example: local aliases </h2>
+
+<pre>
+#
+# pgsql config file for <a href="local.8.html">local(8)</a> <a href="aliases.5.html">aliases(5)</a> lookups
+#
+
+#
+# The hosts that Postfix will try to connect to
+hosts = host1.some.domain host2.some.domain
+
+# The user name and password to log into the pgsql server.
+user = someone
+password = some_password
+
+# The database name on the servers.
+dbname = customer_database
+
+# Postfix 2.2 and later The SQL query template. See <a href="pgsql_table.5.html">pgsql_table(5)</a>.
+query = SELECT forw_addr FROM mxaliases WHERE alias='%s' AND status='paid'
+
+# For Postfix releases prior to 2.2. See <a href="pgsql_table.5.html">pgsql_table(5)</a> for details.
+select_field = forw_addr
+table = mxaliases
+where_field = alias
+# Don't forget the leading "AND"!
+additional_conditions = AND status = 'paid'
+</pre>
+
+<h2>Using mirrored databases</h2>
+
+<p> Sites that have a need for multiple mail exchangers may enjoy
+the convenience of using a networked mailer database, but do not
+want to introduce a single point of failure to their system.   </p>
+
+<p> For this reason we've included the ability to have Postfix
+reference multiple hosts for access to a single pgsql map.  This
+will work if sites set up mirrored pgsql databases on two or more
+hosts. </p>
+
+<p> Whenever queries fail with an error at one host, the rest of
+the hosts will be tried in random order.  If no pgsql server hosts
+are reachable, then mail will be deferred until at least one of
+those hosts is reachable. </p>
+
+<h2>Credits</h2>
+
+<ul>
+
+<li> This code is based upon the Postfix mysql map by Scott Cotton
+and Joshua Marcus, IC Group, Inc.</li>
+
+<li> The PostgreSQL changes were done by Aaron Sethman.</li>
+
+<li> Updates for Postfix 1.1.x and PostgreSQL 7.1+ and support for
+calling stored procedures were added by Philip Warner.</li>
+
+<li> LaMont Jones was the initial Postfix pgsql maintainer.</li>
+
+<li> Liviu Daia revised the configuration interface and added the
+<a href="postconf.5.html">main.cf</a> configuration feature.</li>
+
+<li> Liviu Daia revised the configuration interface and added the <a href="postconf.5.html">main.cf</a>
+configuration feature.</li>
+
+<li> Liviu Daia with further refinements from Jose Luis Tallon and
+Victor Duchovni developed the common query, result_format, domain and
+expansion_limit interface for LDAP, MySQL and PosgreSQL.</li>
+
+<li> Leandro Santi updated the PostgreSQL client after the PostgreSQL
+developers made major database API changes in response to SQL
+injection problems, and made PQexec() handling more robust. </li>
+
+</ul>
+
+</body>
+
+</html>
