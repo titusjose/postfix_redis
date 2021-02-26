@@ -22,21 +22,12 @@
 <p> The Postfix redis map type allows you to hook up Postfix to a
 Redis database. </p>
 
-<p> Busy mail servers using pgsql maps will generate lots of
-concurrent pgsql clients, so the pgsql server(s) should be run with
-this fact in mind. You can reduce the number of concurrent pgsql
-clients by using the Postfix <a href="proxymap.8.html">proxymap(8)</a> service. </p>
-
 <h2>Building Postfix with Redis support</h2>
 
 <p> These instructions assume that you build Postfix from source
 code as described in the <a href="INSTALL.html">INSTALL</a> document. Some modification may
 be required if you build Postfix from a vendor-specific source
 package.  </p>
-
-<p> Note: to use Redis with Alpine Linux's Postfix, all you
-need to do is to install the postfix-redis package and you're done.
-There is no need to recompile Postfix. </p>
 
 <p> In order to build Postfix with redis map support, you specify
 -DHAS_REDIS, the directory with the hiredis header files, and
