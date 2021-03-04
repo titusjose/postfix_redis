@@ -185,7 +185,7 @@ DICT   *dict_redis_open(const char *name, int open_flags, int dict_flags)
     if(c->err) {
         redisFree(c);
         dict_redis->c = NULL;
-        dict_close(dict_redis);
+        dict_redis->dict.close(&dict_redis);
         msg_info("%s:%s: Cannot connect to Redis server %s: %s\n",
             DICT_TYPE_REDIS, name, dict_redis->host, c->errstr);
         return (dict_surrogate(DICT_TYPE_REDIS, name, open_flags, dict_flags,
