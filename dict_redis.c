@@ -103,6 +103,7 @@ typedef struct {
     char   *host;
     int     port;
     char   *prefix;
+    VSTRING *result;
 } DICT_REDIS;
 
 /* internal function declarations */
@@ -118,13 +119,7 @@ static const char *dict_redis_lookup(DICT *dict, const char *name)
     DICT_REDIS *dict_redis = (DICT_REDIS *) dict;
     redisReply *reply;
     const char *r;
-    VSTRING *result;
     dict->error = 0;
-
-    result = vstring_alloc(10);
-    VSTRING_RESET(result);
-    VSTRING_TERMINATE(result);
-
 
     if (msg_verbose)
         msg_info("%s: Requesting key %s%s",dict_redis->host,dict_redis->prefix,name);
@@ -138,15 +133,10 @@ static const char *dict_redis_lookup(DICT *dict, const char *name)
 	name = lowercase(vstring_str(dict->fold_buf));
     }
 
-    if(dict_redis->c) {
-        reply = redisCommand(dict_redis->c,"GET %s%s",dict_redis->prefix,name);
-    }
-    else {
-        dict->error = DICT_ERR_CONFIG;
-    }
+    reply = redisCommand(dict_redis->c,"GET %s%s",dict_redis->prefix,name);
     if(reply->str) {
-        vstring_strcpy(result,reply->str);
-        r = vstring_str(result);
+        vstring_strcpy(dict_redis->result,reply->str);
+        r = vstring_str(dict_redis->result);
         freeReplyObject(reply);
     }
     else {
@@ -165,6 +155,7 @@ static void redis_parse_config(DICT_REDIS *dict_redis, const char *rediscf)
     dict_redis->port = cfg_get_int(p, "port", 6379, 0, 0);
     dict_redis->host = cfg_get_str(p, "host", "127.0.0.1", 1, 0);
     dict_redis->prefix = cfg_get_str(p, "prefix", "", 0, 0);
+    dict_redis->result = vstring_alloc(10);
 }
 
 /* dict_redis_open - open redis data base */
@@ -192,9 +183,14 @@ DICT   *dict_redis_open(const char *name, int open_flags, int dict_flags)
     dict_redis->dict.owner = cfg_get_owner(dict_redis->parser);
     c = redisConnect(dict_redis->host,dict_redis->port);
     if(c->err) {
-        msg_fatal("%s:%s: Cannot connect to Redis server %s: %s\n",
+        redisFree(c);
+        dict_redis->c = NULL;
+        dict_close(&dict_redis);
+        msg_info("%s:%s: Cannot connect to Redis server %s: %s\n",
             DICT_TYPE_REDIS, name, dict_redis->host, c->errstr);
-    } else {
+        return (dict_surrogate(DICT_TYPE_REDIS, name, open_flags, dict_flags,
+			       "open %s: %m", name));
+        } else {
         dict_redis->c = c;
     }
 
@@ -207,10 +203,15 @@ static void dict_redis_close(DICT *dict)
 {
     DICT_REDIS *dict_redis = (DICT_REDIS *) dict;
 
+    if (dict_redis->c) {
+        redisFree(dict_redis->c);
+        dict_redis->c = NULL;
+    }
+    vstring_free(dict_redis->result);
     cfg_parser_free(dict_redis->parser);
     myfree(dict_redis->host);
     if (dict->fold_buf)
-	vstring_free(dict->fold_buf);
+	    vstring_free(dict->fold_buf);
     dict_free(dict);
 }
 
