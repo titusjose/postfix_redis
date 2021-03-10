@@ -119,6 +119,7 @@ static const char *dict_redis_lookup(DICT *dict, const char *name)
     DICT_REDIS *dict_redis = (DICT_REDIS *) dict;
     redisReply *reply;
     const char *r;
+    int error;
     dict->error = 0;
 
     if (msg_verbose)
@@ -134,15 +135,16 @@ static const char *dict_redis_lookup(DICT *dict, const char *name)
     }
 
     reply = redisCommand(dict_redis->c,"GET %s%s",dict_redis->prefix,name);
+    error = dict->error;
     if(reply->str) {
         vstring_strcpy(dict_redis->result,reply->str);
         r = vstring_str(dict_redis->result);
-        freeReplyObject(reply);
     }
     else {
-        return(0);
+        error = 1;
     }
-    return ((dict->error == 0 && *r) ? r : 0);
+    freeReplyObject(reply);
+    return ((error == 0 && *r) ? r : 0);
 }
 
 /* redis_parse_config - parse redis configuration file */
@@ -182,16 +184,13 @@ DICT   *dict_redis_open(const char *name, int open_flags, int dict_flags)
     redis_parse_config(dict_redis, name);
     dict_redis->dict.owner = cfg_get_owner(dict_redis->parser);
     c = redisConnect(dict_redis->host,dict_redis->port);
-    if(c->err) {
-        redisFree(c);
-        dict_redis->c = NULL;
-        dict_redis->dict.close(&dict_redis);
-        msg_info("%s:%s: Cannot connect to Redis server %s: %s\n",
-            DICT_TYPE_REDIS, name, dict_redis->host, c->errstr);
+    dict_redis->c = c;
+    if(c == NULL || c->err) {
+        msg_info("%s:%s: Cannot connect to Redis server %s",
+            DICT_TYPE_REDIS, name, dict_redis->host);
+        dict_redis->dict.close((DICT *)dict_redis);
         return (dict_surrogate(DICT_TYPE_REDIS, name, open_flags, dict_flags,
 			       "open %s: %m", name));
-        } else {
-        dict_redis->c = c;
     }
 
     return (DICT_DEBUG (&dict_redis->dict));
@@ -207,9 +206,10 @@ static void dict_redis_close(DICT *dict)
         redisFree(dict_redis->c);
         dict_redis->c = NULL;
     }
-    vstring_free(dict_redis->result);
     cfg_parser_free(dict_redis->parser);
     myfree(dict_redis->host);
+    myfree(dict_redis->prefix);
+    vstring_free(dict_redis->result);
     if (dict->fold_buf)
 	    vstring_free(dict->fold_buf);
     dict_free(dict);
