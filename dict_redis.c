@@ -184,7 +184,7 @@ DICT   *dict_redis_open(const char *name, int open_flags, int dict_flags)
     dict_redis->dict.owner = cfg_get_owner(dict_redis->parser);
     dict_redis->c = redisConnect(dict_redis->host,dict_redis->port);
     if(dict_redis->c == NULL || dict_redis->c->err) {
-        msg_info("%s:%s: Cannot connect to Redis server %s",
+        msg_warn("%s:%s: Cannot connect to Redis server %s",
             DICT_TYPE_REDIS, name, dict_redis->host);
         dict_redis->dict.close((DICT *)dict_redis);
         return (dict_surrogate(DICT_TYPE_REDIS, name, open_flags, dict_flags,
