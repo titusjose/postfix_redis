@@ -151,7 +151,7 @@ static const char *dict_redis_lookup(DICT *dict, const char *name)
 
 static void redis_parse_config(DICT_REDIS *dict_redis, const char *rediscf)
 {
-    const char *myname = "redisname_parse";
+    const char *myname = "redis_parse_config";
     CFG_PARSER *p = dict_redis->parser;
 
     dict_redis->port = cfg_get_int(p, "port", 6379, 0, 0);
@@ -166,7 +166,6 @@ DICT   *dict_redis_open(const char *name, int open_flags, int dict_flags)
 {
     DICT_REDIS *dict_redis;
     CFG_PARSER *parser;
-    redisContext *c;
 
     /*
      * Open the configuration file.
@@ -183,9 +182,8 @@ DICT   *dict_redis_open(const char *name, int open_flags, int dict_flags)
     dict_redis->parser = parser;
     redis_parse_config(dict_redis, name);
     dict_redis->dict.owner = cfg_get_owner(dict_redis->parser);
-    c = redisConnect(dict_redis->host,dict_redis->port);
-    dict_redis->c = c;
-    if(c == NULL || c->err) {
+    dict_redis->c = redisConnect(dict_redis->host,dict_redis->port);
+    if(dict_redis->c == NULL || dict_redis->c->err) {
         msg_info("%s:%s: Cannot connect to Redis server %s",
             DICT_TYPE_REDIS, name, dict_redis->host);
         dict_redis->dict.close((DICT *)dict_redis);
