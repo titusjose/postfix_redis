@@ -209,7 +209,7 @@ static void dict_redis_close(DICT *dict)
     myfree(dict_redis->prefix);
     vstring_free(dict_redis->result);
     if (dict->fold_buf)
-	    vstring_free(dict->fold_buf);
+        vstring_free(dict->fold_buf);
     dict_free(dict);
 }
 
