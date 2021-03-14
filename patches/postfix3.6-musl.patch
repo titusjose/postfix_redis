@@ -1,0 +1,30 @@
+diff -Nurp a/src/dns/dns_lookup.c aa/src/dns/dns_lookup.c
+--- a/src/dns/dns_lookup.c	2020-05-23 17:38:26.000000000 +0100
++++ aa/src/dns/dns_lookup.c	2020-09-24 19:42:10.782442351 +0100
+@@ -394,8 +394,10 @@ static int dns_neg_query(const char *nam
+ 	if (msg_verbose)
+ 	    msg_info("res_nmkquery() failed");
+ 	return (len);
+-    } else if ((len = DNS_RES_NSEND(&dns_res_state,
+-				    msg_buf, len, answer, anslen)) < 0) {
++    }
++    msg_buf[3] |= 32; // AD flag
++    if ((len = DNS_RES_NSEND(&dns_res_state,
++					msg_buf, len, answer, anslen)) < 0) {
+ 	DNS_SET_H_ERRNO(&dns_res_state, TRY_AGAIN);
+ 	if (msg_verbose)
+ 	    msg_info("res_nsend() failed");
+@@ -538,11 +540,12 @@ static int dns_query(const char *name, i
+     for (;;) {
+ 	dns_res_state.options &= ~saved_options;
+ 	dns_res_state.options |= flags;
+-	if (keep_notfound && var_dns_ncache_ttl_fix) {
++	if (1) {
+ #ifdef HAVE_RES_SEND
+ 	    len = dns_neg_query((char *) name, C_IN, type, reply->buf,
+ 				reply->buf_len);
+ #else
++#error HAVE_RES_SEND not defined
+ 	    var_dns_ncache_ttl_fix = 0;
+ 	    msg_warn("system library does not support %s=yes"
+ 		     " -- ignoring this setting", VAR_DNS_NCACHE_TTL_FIX);
