@@ -20,7 +20,6 @@
   * External interface.
   */
 #define DICT_TYPE_REDIS	"redis"
-#endif /*SNAPSHOT */
 
 extern DICT *dict_redis_open(const char *, int, int);
 
