@@ -1,0 +1,196 @@
+--- /var/tmp/postfix-3.6-20210224/conf/dynamicmaps.cf	2014-05-30 07:38:33.000000000 -0400
++++ ./conf/dynamicmaps.cf	2021-03-11 18:07:16.529195712 -0500
+@@ -5,5 +5,6 @@
+ mysql	${LIB_PREFIX}mysql${LIB_SUFFIX}	dict_mysql_open
+ pcre	${LIB_PREFIX}pcre${LIB_SUFFIX}	dict_pcre_open
+ pgsql	${LIB_PREFIX}pgsql${LIB_SUFFIX}	dict_pgsql_open
++redis	${LIB_PREFIX}redis${LIB_SUFFIX} dict_redis_open
+ sdbm	${LIB_PREFIX}sdbm${LIB_SUFFIX}	dict_sdbm_open	mkmap_sdbm_open
+ sqlite	${LIB_PREFIX}sqlite${LIB_SUFFIX}	dict_sqlite_open
+diff '--exclude=man' '--exclude=html' '--exclude=README_FILES' '--exclude=INSTALL' '--exclude=.indent.pro' -r -ur --new-file /var/tmp/postfix-3.6-20210224/conf/postfix-files ./conf/postfix-files
+--- /var/tmp/postfix-3.6-20210224/conf/postfix-files	2019-01-29 17:24:42.000000000 -0500
++++ ./conf/postfix-files	2021-03-11 18:07:16.530195726 -0500
+@@ -78,6 +78,7 @@
+ $shlib_directory/${LIB_PREFIX}mysql${LIB_SUFFIX}:f:root:-:755
+ $shlib_directory/${LIB_PREFIX}pcre${LIB_SUFFIX}:f:root:-:755
+ $shlib_directory/${LIB_PREFIX}pgsql${LIB_SUFFIX}:f:root:-:755
++$shlib_directory/${LIB_PREFIX}redis${LIB_SUFFIX}:f:root:-:755
+ $shlib_directory/${LIB_PREFIX}sdbm${LIB_SUFFIX}:f:root:-:755
+ $shlib_directory/${LIB_PREFIX}sqlite${LIB_SUFFIX}:f:root:-:755
+ $meta_directory/dynamicmaps.cf.d:d:root:-:755
+@@ -200,6 +201,7 @@
+ $manpage_directory/man5/nisplus_table.5:f:root:-:644
+ $manpage_directory/man5/pcre_table.5:f:root:-:644
+ $manpage_directory/man5/pgsql_table.5:f:root:-:644
++$manpage_directory/man5/redis_table.5:f:root:-:644
+ $manpage_directory/man5/postconf.5:f:root:-:644
+ $manpage_directory/man5/postfix-wrapper.5:f:root:-:644
+ $manpage_directory/man5/regexp_table.5:f:root:-:644
+@@ -307,6 +309,7 @@
+ $readme_directory/PACKAGE_README:f:root:-:644
+ $readme_directory/PCRE_README:f:root:-:644
+ $readme_directory/PGSQL_README:f:root:-:644
++$readme_directory/REDIS_README:f:root:-:644
+ $readme_directory/POSTSCREEN_README:f:root:-:644
+ $readme_directory/QMQP_README:f:root:-:644:o
+ $readme_directory/QSHAPE_README:f:root:-:644
+@@ -363,6 +366,7 @@
+ $html_directory/PACKAGE_README.html:f:root:-:644
+ $html_directory/PCRE_README.html:f:root:-:644
+ $html_directory/PGSQL_README.html:f:root:-:644
++$html_directory/REDIS_README.html:f:root:-:644
+ $html_directory/POSTSCREEN_README.html:f:root:-:644
+ $html_directory/QMQP_README.html:f:root:-:644:o
+ $html_directory/QSHAPE_README.html:f:root:-:644
+@@ -414,6 +418,7 @@
+ $html_directory/oqmgr.8.html:f:root:-:644
+ $html_directory/pcre_table.5.html:f:root:-:644
+ $html_directory/pgsql_table.5.html:f:root:-:644
++$html_directory/redis_table.5.html:f:root:-:644
+ $html_directory/pickup.8.html:f:root:-:644
+ $html_directory/pipe.8.html:f:root:-:644
+ $html_directory/postalias.1.html:f:root:-:644
+diff '--exclude=man' '--exclude=html' '--exclude=README_FILES' '--exclude=INSTALL' '--exclude=.indent.pro' -r -ur --new-file /var/tmp/postfix-3.6-20210224/makedefs ./makedefs
+--- /var/tmp/postfix-3.6-20210224/makedefs	2020-09-30 17:22:49.000000000 -0400
++++ ./makedefs	2021-03-11 18:07:16.531195739 -0500
+@@ -1165,7 +1165,7 @@
+ 
+ # Propagate AUXLIBS_FOO or merge them into global AUXLIBS (i.e. SYSLIBS).
+ 
+-PLUGGABLE_MAPS="CDB LDAP LMDB MYSQL PCRE PGSQL SDBM SQLITE"
++PLUGGABLE_MAPS="CDB LDAP LMDB MYSQL PCRE PGSQL REDIS SDBM SQLITE"
+ 
+ case "$dynamicmaps" in
+ yes) for name in $PLUGGABLE_MAPS
+diff '--exclude=man' '--exclude=html' '--exclude=README_FILES' '--exclude=INSTALL' '--exclude=.indent.pro' -r -ur --new-file /var/tmp/postfix-3.6-20210224/proto/DATABASE_README.html ./proto/DATABASE_README.html
+--- /var/tmp/postfix-3.6-20210224/proto/DATABASE_README.html	2020-08-29 13:51:42.000000000 -0400
++++ ./proto/DATABASE_README.html	2021-03-13 17:14:36.642652892 -0500
+@@ -421,6 +421,11 @@
+ as used in "sdbm:table" is the database file name without the ".dir"
+ or ".pag" suffix.  </dd>
+ 
++<dt> <b>redis</b> (read-only) </dt>
++
++<dd> Redis database. Configuration details are given in redis_table(5).
++</dd>
++
+ <dt> <b>socketmap</b> (read-only) </dt>
+ 
+ <dd> Sendmail-style socketmap client. The name of the table is
+diff '--exclude=man' '--exclude=html' '--exclude=README_FILES' '--exclude=INSTALL' '--exclude=.indent.pro' -r -ur --new-file /var/tmp/postfix-3.6-20210224/proto/redis_table ./proto/redis_table
+--- /var/tmp/postfix-3.6-20210224/src/global/mail_dict.c	2014-06-21 20:42:55.000000000 -0400
++++ ./src/global/mail_dict.c	2021-03-11 18:07:16.532195753 -0500
+@@ -45,6 +45,7 @@
+ #include <dict_ldap.h>
+ #include <dict_mysql.h>
+ #include <dict_pgsql.h>
++#include <dict_redis.h>
+ #include <dict_sqlite.h>
+ #include <dict_memcache.h>
+ #include <mail_dict.h>
+@@ -68,6 +69,9 @@
+ #ifdef HAS_PGSQL
+     DICT_TYPE_PGSQL, dict_pgsql_open,
+ #endif
++#ifdef HAS_REDIS
++    DICT_TYPE_REDIS, dict_redis_open,
++#endif
+ #ifdef HAS_SQLITE
+     DICT_TYPE_SQLITE, dict_sqlite_open,
+ #endif
+diff '--exclude=man' '--exclude=html' '--exclude=README_FILES' '--exclude=INSTALL' '--exclude=.indent.pro' -r -ur --new-file /var/tmp/postfix-3.6-20210224/src/global/Makefile.in ./src/global/Makefile.in
+--- /var/tmp/postfix-3.6-20210224/src/global/Makefile.in	2021-01-09 16:24:11.000000000 -0500
++++ ./src/global/Makefile.in	2021-03-11 18:07:16.535195793 -0500
+@@ -3,7 +3,7 @@
+ 	canon_addr.c cfg_parser.c cleanup_strerror.c cleanup_strflags.c \
+ 	clnt_stream.c conv_time.c db_common.c debug_peer.c debug_process.c \
+ 	defer.c deliver_completed.c deliver_flock.c deliver_pass.c \
+-	deliver_request.c dict_ldap.c dict_mysql.c dict_pgsql.c \
++	deliver_request.c dict_ldap.c dict_mysql.c dict_pgsql.c dict_redis.c \
+ 	dict_proxy.c dict_sqlite.c domain_list.c dot_lockfile.c dot_lockfile_as.c \
+ 	dsb_scan.c dsn.c dsn_buf.c dsn_mask.c dsn_print.c dsn_util.c \
+ 	ehlo_mask.c ext_prop.c file_id.c flush_clnt.c header_opts.c \
+@@ -80,13 +80,13 @@
+ # MAP_OBJ is for maps that may be dynamically loaded with dynamicmaps.cf.
+ # When hard-linking these maps, makedefs sets NON_PLUGIN_MAP_OBJ=$(MAP_OBJ),
+ # otherwise it sets the PLUGIN_* macros.
+-MAP_OBJ = dict_ldap.o dict_mysql.o dict_pgsql.o dict_sqlite.o mkmap_cdb.o \
++MAP_OBJ = dict_ldap.o dict_mysql.o dict_pgsql.o dict_redis.o dict_sqlite.o mkmap_cdb.o \
+ 	mkmap_lmdb.o mkmap_sdbm.o 
+ HDRS	= abounce.h anvil_clnt.h been_here.h bounce.h bounce_log.h \
+ 	canon_addr.h cfg_parser.h cleanup_user.h clnt_stream.h config.h \
+ 	conv_time.h db_common.h debug_peer.h debug_process.h defer.h \
+ 	deliver_completed.h deliver_flock.h deliver_pass.h deliver_request.h \
+-	dict_ldap.h dict_mysql.h dict_pgsql.h dict_proxy.h dict_sqlite.h domain_list.h \
++	dict_ldap.h dict_mysql.h dict_pgsql.h dict_redis.h dict_proxy.h dict_sqlite.h domain_list.h \
+ 	dot_lockfile.h dot_lockfile_as.h dsb_scan.h dsn.h dsn_buf.h \
+ 	dsn_mask.h dsn_print.h dsn_util.h ehlo_mask.h ext_prop.h \
+ 	file_id.h flush_clnt.h header_opts.h header_token.h input_transp.h \
+@@ -135,7 +135,7 @@
+ LIB_DIR	= ../../lib
+ INC_DIR	= ../../include
+ PLUGIN_MAP_SO = $(LIB_PREFIX)ldap$(LIB_SUFFIX) $(LIB_PREFIX)mysql$(LIB_SUFFIX) \
+-	$(LIB_PREFIX)pgsql$(LIB_SUFFIX) $(LIB_PREFIX)sqlite$(LIB_SUFFIX) \
++	$(LIB_PREFIX)pgsql$(LIB_SUFFIX) $(LIB_PREFIX)redis$(LIB_SUFFIX) $(LIB_PREFIX)sqlite$(LIB_SUFFIX) \
+ 	$(LIB_PREFIX)lmdb$(LIB_SUFFIX) $(LIB_PREFIX)cdb$(LIB_SUFFIX) \
+ 	$(LIB_PREFIX)sdbm$(LIB_SUFFIX)
+ MAKES	=
+@@ -171,6 +171,9 @@
+ $(LIB_PREFIX)pgsql$(LIB_SUFFIX): dict_pgsql.o
+ 	$(PLUGIN_LD) $(SHLIB_RPATH) -o $@ dict_pgsql.o $(AUXLIBS_PGSQL)
+ 
++$(LIB_PREFIX)redis$(LIB_SUFFIX): dict_redis.o
++	$(PLUGIN_LD) $(SHLIB_RPATH) -o $@ dict_redis.o $(AUXLIBS_REDIS)
++
+ $(LIB_PREFIX)sqlite$(LIB_SUFFIX): dict_sqlite.o
+ 	$(PLUGIN_LD) $(SHLIB_RPATH) -o $@ dict_sqlite.o $(AUXLIBS_SQLITE)
+ 
+@@ -535,6 +538,8 @@
+ 	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict mysql:/xx read >>surrogate.tmp 2>&1
+ 	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict pgsql:/xx write >>surrogate.tmp 2>&1
+ 	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict pgsql:/xx read >>surrogate.tmp 2>&1
++	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict redis:/xx write >>surrogate.tmp 2>&1
++	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict redis:/xx read >>surrogate.tmp 2>&1
+ 	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict sqlite:/xx write >>surrogate.tmp 2>&1
+ 	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict sqlite:/xx read >>surrogate.tmp 2>&1
+ 	echo get foo| $(SHLIB_ENV) $(VALGRIND) ./mail_dict memcache:/xx read >>surrogate.tmp 2>&1
+@@ -1231,6 +1236,17 @@
+ dict_pgsql.o: dict_pgsql.c
+ dict_pgsql.o: dict_pgsql.h
+ dict_pgsql.o: string_list.h
++dict_redis.o: ../../include/dict.h
++dict_redis.o: ../../include/msg.h
++dict_redis.o: ../../include/mymalloc.h
++dict_redis.o: ../../include/vbuf.h
++dict_redis.o: ../../include/vstream.h
++dict_redis.o: ../../include/vstring.h
++dict_redis.o: ../../include/stringops.h
++dict_redis.o: ../../include/sys_defs.h
++dict_redis.o: cfg_parser.h
++dict_redis.o: dict_redis.c
++dict_redis.o: dict_redis.h
+ dict_proxy.o: ../../include/argv.h
+ dict_proxy.o: ../../include/attr.h
+ dict_proxy.o: ../../include/check_arg.h
+@@ -1835,6 +1851,7 @@
+ mail_dict.o: dict_memcache.h
+ mail_dict.o: dict_mysql.h
+ mail_dict.o: dict_pgsql.h
++mail_dict.o: dict_redis.h
+ mail_dict.o: dict_proxy.h
+ mail_dict.o: dict_sqlite.h
+ mail_dict.o: dynamicmaps.h
+diff '--exclude=man' '--exclude=html' '--exclude=README_FILES' '--exclude=INSTALL' '--exclude=.indent.pro' -r -ur --new-file /var/tmp/postfix-3.6-20210224/src/postconf/postconf.c ./src/postconf/postconf.c
+--- /var/tmp/postfix-3.6-20210224/src/postconf/postconf.c	2021-01-03 12:08:51.000000000 -0500
++++ ./src/postconf/postconf.c	2021-03-13 16:50:27.846333680 -0500
+@@ -339,6 +339,10 @@
+ /*	with support for SDBM databases.
+ /*
+ /*	This feature is available with Postfix 2.2 and later.
++/* .IP "\fBredis\fR (read-only)"
++/*	Redis database. This is described in \fBredis_table\fR(5).
++/*
++/*	This feature is available with Postfix 3.7 and later.
+ /* .IP "\fBsocketmap\fR (read-only)"
+ /*	Sendmail-style socketmap client. The table name is
+ /*	\fBinet\fR:\fIhost\fR:\fIport\fR:\fIname\fR for a TCP/IP
