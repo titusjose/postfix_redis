@@ -1,3 +1,6 @@
+### Now availible on Alpine linux
+As the `postfix-redis` package, so it can be installed without compiling.
+
 ### Postfix Redis
 This is a patch to the postfix 3.4.3+ MTA to add a lookup table for redis database.
 
